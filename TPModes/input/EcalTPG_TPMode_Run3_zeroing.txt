@@ -1,0 +1,14 @@
+EnableEBOddFilter 1
+EnableEEOddFilter 0
+EnableEBOddPeakFinder 0
+EnableEEOddPeakFinder 0
+DisableEBEvenPeakFinder 0
+DisableEEEvenPeakFinder 0
+FenixEBStripOutput 2
+FenixEEStripOutput 0
+FenixEBStripInfobit2 1
+FenixEEStripInfobit2 0
+EBFenixTcpOutput 0
+EBFenixTcpInfobit1 1
+EEFenixTcpOutput 0
+EEFenixTcpInfobit1 0
