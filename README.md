@@ -18,8 +18,8 @@ crab submit -c <Configuration_2>
 
 cd CMSSW_12_3_0_pre1/src/L1MenuTools/rate-estimation
 
-Make ntuple list 1 (output files from Configuration 1)
-Make ntuple list 2 (output files from Configuration 2)
+./makeFileList.py /eos/cms/store/group/dpg_ecal/alca_ecalcalib/Trigger/DoubleWeights/L1_Rates_and_TurnOns/Run_320038/Run_320038_Run2/220215_145146/0000/ > DoubleWeights_Run2Config.list  # Make ntuple list 1 (output files from Configuration 1)
+./makeFileList.py /eos/cms/store/group/dpg_ecal/alca_ecalcalib/Trigger/DoubleWeights/L1_Rates_and_TurnOns/Run_320038/Run_320038_StripZeroing/220215_145518/0000/ > DoubleWeights_StripSubConfig.list # Make ntuple list 2 (output files from Configuration 2)
 
 Create lumi csv 
 Create prescale csv 
