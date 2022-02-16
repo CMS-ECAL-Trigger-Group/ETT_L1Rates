@@ -21,46 +21,35 @@ crab submit -c CrabConfig_12_1_0_pre3.py
 DatasetLabel = "Run_320038"
 
 # # Configuration parameters 
-inDir = "/afs/cern.ch/work/a/atishelm/private/CMS-ECAL-Trigger-Group/L1Rates/CMSSW_12_3_0_pre1/src/"
+inDir = "/afs/cern.ch/work/a/atishelm/private/CMS-ECAL-Trigger-Group/L1Rates/CMSSW_12_3_0_pre1/src/ETT_L1Rates/"
+simECALTP = 0 
 oneFile = 1 # Run over one file as a test (recommended before running over large datasets to test incompatibility issues)
-# WeightsWP = "2p5Prime"  # odd weights working point. Options: [2p5Prime, 0p5Prime] 
-# ODD_PF = 1 # 0: No ODD peak finder. 1: With ODD peak finder
 addFilePrefix = 0 # Add "file:" to start of file paths 
 removeEOSprefix = 1 
 # RecoMethod = "Multifit" # options: Multifit, weights
-
-# if(ODD_PF): 
-#   TPMode_file = "EcalTPG_TPMode_Run3_zeroingOddPeakFinder.db"
-#   TPMode_Tag = "EcalTPG_TPMode_Run3_zeroingOddPeakFinder"
-#   ODD_PF_string = "WithOddPeakFinder"
-# else: 
-#   TPMode_file = "EcalTPG_TPMode_Run3_zeroing.db"
-#   TPMode_Tag = "EcalTPG_TPMode_Run3_zeroing"
-#   ODD_PF_string = "WithoutOddPeakFinder"
-
-# print("Configuration parameters:")
-# print("oneFile:",oneFile)
-# print("WeightsWP:",WeightsWP)
-# print("TPMode_file:",TPMode_file)
-# print("ODD_PF_string:",ODD_PF_string)
-# print("RecoMethod:",RecoMethod)
+# ODD_PF = 1 # 0: No ODD peak finder. 1: With ODD peak finder
 
 runs = ["320038"]
 ECAL_Config = "Run2"
 # ECAL_Config = "StripZeroing"
 
+if(simECALTP):
+  simECALTP_Tag = "simECALTP"
+else:
+  simECALTP_Tag = "NosimECALTP"
+
 if(ECAL_Config == "Run2"):
-  OverrideWeights = 0 
+  OverrideWeights = 1
   WeightsWP = "Run2Weights"
-  TPMode_file = "NOTPMODEFILE.db"
-  TPMode_Tag = "NOTPMODETAG"
-  ODD_PF_string = "NOODDPFstring"    
+  OddWeightsSqliteFile = "MinDelta_2p5Prime_OddWeights.db" # because something needs to be passed in case a value for the record doesn't exist for the global tag 
+  TPMode_file = "EcalTPG_TPMode_Run2_default.db"
+  TPMode_Tag = "EcalTPG_TPMode_Run2_default"
 else:
   OverrideWeights = 1 
+  OddWeightsSqliteFile="MinDelta_2p5Prime_OddWeights.db"
   WeightsWP = "2p5Prime"
   TPMode_file = "EcalTPG_TPMode_Run3_zeroingOddPeakFinder.db"
   TPMode_Tag = "EcalTPG_TPMode_Run3_zeroingOddPeakFinder"
-  ODD_PF_string = "WithOddPeakFinder"  
 
 CMS_files = []
 print("Adding CMS files...")
@@ -80,7 +69,7 @@ for run in runs:
 
              CMS_files.append(file_path)
 
-# To get 2018D ZeroBias data files 
+# To get 2018 ZeroBias data files 
 """
 Nblocks = 11 # Max: 11 
 ##-- By block number 
@@ -123,15 +112,16 @@ requestName = '{DatasetLabel}_{ECAL_Config}{oneFileStr}'.format(DatasetLabel=Dat
 config.General.requestName = requestName
 config.General.workArea = 'crab_projects'
 config.General.transferOutputs = True # Need this True to transfer output files, at least with eos output.
-config.General.transferLogs = False 
+config.General.transferLogs = True 
 
 # cmssw configuration file parameters 
 config.JobType.pyCfgParams = [
                                 'OverrideWeights=%s'%(OverrideWeights), # whether or not to override weights from global tag 
+                                'simECALTP=%s'%(simECALTP), # re-construct L1 objects using re-emulated ECAL TPs 
                                 'TPModeSqliteFile=%s'%(TPMode_file), # strip zeroing, with or without ODD PF configs to try: [EcalTPG_TPMode_Run3_zeroingOddPeakFinder.db, EcalTPG_TPMode_Run3_zeroing,db]
                                 'OddWeightsGroupSqliteFile=OneEBOneEEset_adding2021Strips.db', # weights group for each strip - defines which set of ODD weights each strip should use 
                                 'TPModeTag=%s'%(TPMode_Tag), # TPMode, aka electronics configuration
-                                'OddWeightsSqliteFile=MinDelta_%s_OddWeights.db'%(WeightsWP), # Working points to try: [MinDelta_2p5Prime_OddWeights, MinDelta_0p5Prime_OddWeights.db]
+                                'OddWeightsSqliteFile=%s'%(OddWeightsSqliteFile), # Working points to try: [MinDelta_2p5Prime_OddWeights, MinDelta_0p5Prime_OddWeights.db]
                              ] 
                              
 config.JobType.pluginName = 'Analysis'
@@ -143,8 +133,7 @@ config.Data.unitsPerJob = 1
 
 # Output directory / file naming
 config.Data.outputPrimaryDataset = '%s%s'%(DatasetLabel, oneFileStr)
-# config.Data.outputDatasetTag = 'ETTAnalyzer_CMSSW_12_1_0_pre3_DoubleWeights_%sRecoMethod_StripZeroingMode_%sODDweights'%(RecoMethod, WeightsWP) 
-config.Data.outputDatasetTag = '{DatasetLabel}_{ECAL_Config}{oneFileStr}'.format(DatasetLabel=DatasetLabel, ECAL_Config=ECAL_Config, oneFileStr=oneFileStr)
+config.Data.outputDatasetTag = '{DatasetLabel}_{ECAL_Config}_{simECALTP_Tag}{oneFileStr}'.format(DatasetLabel=DatasetLabel, ECAL_Config=ECAL_Config, simECALTP_Tag=simECALTP_Tag, oneFileStr=oneFileStr)
 
 config.Data.outLFNDirBase = '/store/group/dpg_ecal/alca_ecalcalib/Trigger/DoubleWeights/L1_Rates_and_TurnOns/' 
 config.Data.publication = False 
@@ -163,6 +152,7 @@ config.JobType.inputFiles = [
                              # TPModes
                              '%s/TPModes/output/EcalTPG_TPMode_Run3_zeroing.db'%(inDir),
                              '%s/TPModes/output/EcalTPG_TPMode_Run3_zeroingOddPeakFinder.db'%(inDir),
+                             '%s/TPModes/output/EcalTPG_TPMode_Run2_default.db'%(inDir),
 
                              # Misc
                              '%s/weights/output/OneEBOneEEset_adding2021Strips.db'%(inDir), # OddWeightsGroup - defines odd weights to be used by each ECAL strip 

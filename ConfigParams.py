@@ -66,19 +66,21 @@ ECAL_options.register ('RecoMethod', ##-- Offline energy reconstruction method
                 VarParsing.VarParsing.multiplicity.singleton, 
                 VarParsing.VarParsing.varType.string,          
                 "RecoMethod")                                               
-ECAL_options.register ('Printerval', ##-- How often to print event information  
-                99999, # default value
-                VarParsing.VarParsing.multiplicity.singleton, # singleton or list
-                VarParsing.VarParsing.varType.int,           # string, int, or float
-                "Printerval")   
 ##-- If using es_prefer to override odd weights records over global tag. If global tag does not contain TPG odd weight records, may need to do this 
 ECAL_options.register ('OverrideWeights', 
                 False, # default value
                 VarParsing.VarParsing.multiplicity.singleton, 
                 VarParsing.VarParsing.varType.bool,           
                 "OverrideWeights")    
+# reconstruct L1 objects using emulated ECAL TPs 
+ECAL_options.register ('simECALTP', 
+                False, # default value
+                VarParsing.VarParsing.multiplicity.singleton, 
+                VarParsing.VarParsing.varType.bool,           
+                "simECALTP")    
+
 # ECAL_options.register ('UserGlobalTag', ##-- global tag                           
-#                 '113X_dataRun2_relval_v1', 
+#                 '101X_dataRun2_HLT_v7', 
 #                 VarParsing.VarParsing.multiplicity.singleton, 
 #                 VarParsing.VarParsing.varType.string,          
 #                 "UserGlobalTag") 
