@@ -25,83 +25,57 @@ for arg in arg_names: exec("{arg} = args.{arg}".format(arg=arg))
 # Get csv files with rate information 
 print("inDir:",inDir)
 
-f1 = "{inDir}/Run_320038_NoECALsim_NotUnpacked.csv".format(inDir=inDir)
-f2 = "{inDir}/Run_320038_NoECALsim_Unpacked.csv".format(inDir=inDir)
-f3 = "{inDir}/Run_320038_Run2Mode_WithECALSim.csv".format(inDir=inDir)
-# f3 = "{inDir}/StripSubConfig.csv".format(inDir=inDir)
+files = [
+    "{inDir}/Run_320038_NoECALsim_NotUnpacked.csv".format(inDir=inDir),
+    "{inDir}/Run_320038_NoECALsim_Unpacked.csv".format(inDir=inDir),
+    "{inDir}/Run_320038_Run2Mode_WithECALSim.csv".format(inDir=inDir),
+    "{inDir}/Run_320038_StripZeroingMode_WithECALSim.csv".format(inDir=inDir)
+]
+
+fileLabels = [f.split('/')[-1].split('.')[0] for f in files]
 
 seeds = GetSeeds()
-
-rates1 = []
-rates2 = []
-rates3 = [] 
-
-yerr1 = []
-yerr2 = []
-yerr3 = []
-
 x_indicies = [] 
 seeds_used = []
 
-ratios_to_data1 = []
-ratios_to_data3 = []
-
-ratios_to_data1_errs = []
-ratios_to_data3_errs = []
+for file_i in range(0, len(files)):
+    exec("rates%s = []"%(file_i))
+    exec("yerr%s = []"%(file_i))
+    if(file_i == 1): # data unpacked, don't compute ratio
+        continue 
+    else:
+        exec("ratios_to_data%s = []"%(file_i))  
+        exec("ratios_to_data%s_errs = []"%(file_i))  
 
 for seed in seeds:
-    df1 = pd.read_csv(f1)
-    df2 = pd.read_csv(f2)
-    df3 = pd.read_csv(f3)
 
-    df1.set_index('L1SeedName', inplace=True)
-    df1 = df1.loc[seed]
-    rate1 = df1.iloc[2]
-    rate1_err = df1.iloc[3]  
+    for file_i in range(0, len(files)):
+        exec("f%s = files[file_i]"%(file_i))
+        exec("df%s = pd.read_csv(f%s)"%(file_i, file_i))  
+        exec("df%s.set_index('L1SeedName', inplace=True)"%(file_i))  
+        exec("df%s = df%s.loc[seed]"%(file_i, file_i))
+        exec("rate%s = df%s.iloc[2]"%(file_i, file_i))
+        exec("rate%s_err = df%s.iloc[3]"%(file_i, file_i))
 
-    df2.set_index('L1SeedName', inplace=True)
-    df2 = df2.loc[seed]
-    rate2 = df2.iloc[2]
-    rate2_err = df2.iloc[3]  
-
-    df3.set_index('L1SeedName', inplace=True)
-    df3 = df3.loc[seed]
-    rate3 = df3.iloc[2]
-    rate3_err = df3.iloc[3]  
-
-    if((rate1 != 0) and (rate2 != 0) and (rate3 != 0)):
+    if((rate0 != 0) and (rate1 != 0) and (rate2 != 0) and (rate3 != 0)):
         seeds_used.append(seed)
-        rates1.append(rate1) 
-        rates2.append(rate2) 
-        rates3.append(rate3)
 
-        yerr1.append(rate1_err)
-        yerr2.append(rate2_err)
-        yerr3.append(rate3_err)
-
-        ratio_1 = float(rate1) / float(rate2)
-        ratio_3 = float(rate3) / float(rate2)
-
-        ratios_to_data1.append(ratio_1) # assumes rate 2 is the unpacked data 
-        ratios_to_data3.append(ratio_3)
-
-        # Poissonion error (no MC weights)
-        rel_err_1 = math.sqrt( (rate1_err / rate1)**2 + (rate2_err / rate2)**2)
-        rel_err_3 = math.sqrt( (rate3_err / rate3)**2 + (rate2_err / rate2)**2)
-
-        abs_err_1 = rel_err_1 * ratio_1 
-        abs_err_3 = rel_err_3 * ratio_3 
-
-        ratios_to_data1_errs.append(abs_err_1)
-        ratios_to_data3_errs.append(abs_err_3)
+        for file_i in range(0, len(files)):
+            exec("rates%s.append(rate%s)"%(file_i, file_i))
+            exec("yerr%s.append(rate%s_err)"%(file_i, file_i))
+            if(file_i == 1): # data unpacked, don't compute ratio
+                continue 
+            else:
+                exec("ratio_%s = float(rate%s) / float(rate1)"%(file_i, file_i))
+                exec("ratios_to_data%s.append(ratio_%s)"%(file_i, file_i)) # assumes rate 1 is the unpacked data 
+                exec("rel_err_%s = math.sqrt( (rate%s_err / rate%s)**2 + (rate1_err / rate1)**2 )"%(file_i, file_i, file_i)) # Poissonion error (no MC weights)
+                exec("abs_err_%s = rel_err_%s * ratio_%s"%(file_i, file_i, file_i))
+                exec("ratios_to_data%s_errs.append(abs_err_%s)"%(file_i, file_i))
 
 x_indicies = [i for i in range(0,len(rates1))]
 
-ymax = np.max(rates1)
-
-df_out_1 = pd.DataFrame({"rate" : rates1})
-df_out_2 = pd.DataFrame({"rate" : rates2})
-df_out_3 = pd.DataFrame({"rate" : rates3})
+for file_i in range(0, len(files)):
+    exec("df_out_%s = pd.DataFrame({'rate' : rates%s})"%(file_i, file_i))
 
 fig, axarr = plt.subplots(1,2, 
                             sharey=True, 
@@ -111,28 +85,33 @@ fig, axarr = plt.subplots(1,2,
                                 }
                             )  
 
-
-
 leftPlot = axarr[0]
 rightPlot = axarr[1]
 degrees = 0 
 leftPlot.set_yticks(x_indicies)
 leftPlot.set_yticklabels(seeds_used)
 
-leftPlot.plot(df_out_1["rate"], x_indicies, color="b", marker = "s", alpha = 0.5, linewidth = 0)
-leftPlot.plot(df_out_2["rate"], x_indicies, color="r", marker = "o", alpha = 0.5, linewidth = 0)
-if(includeAll): leftPlot.plot(df_out_3["rate"], x_indicies, color="g", marker = "X", alpha = 0.5, linewidth = 0)
+colors = [
+    'C0', 'C1', 'C2', 'C3'
+]
 
-if(error):
-    leftPlot.errorbar(df_out_1["rate"], x_indicies,  xerr=yerr1, alpha = 0.5, fmt='', color = "b", capsize = 3, linestyle='')
-    leftPlot.errorbar(df_out_2["rate"], x_indicies,  xerr=yerr2, alpha = 0.5, fmt='', color = "r", capsize = 3, linestyle='')
-    if(includeAll): leftPlot.errorbar(df_out_3["rate"], x_indicies,  xerr=yerr3, alpha = 0.5, fmt='', color = "g", capsize = 3, linestyle='')
+markers = [
+    's', 'o', 'X', '*'
+]
 
+for file_i in range(0, len(files)):
+    color, marker = colors[file_i], markers[file_i]
+    exec("leftPlot.plot(df_out_%s['rate'], x_indicies, color = color, marker = marker, alpha = 0.5, linewidth = 0)"%(file_i))
+    exec("leftPlot.errorbar(df_out_%s['rate'], x_indicies, xerr=yerr%s, fmt='', capsize = 3, linestyle='', color = color, marker = marker, alpha = 0.5, linewidth = 0)"%(file_i, file_i))
+
+leftPlot.legend(fileLabels)
 leftPlot.set_xlabel('Rate (Hz)', fontsize=15)
-if(includeAll):
-    leftPlot.legend(['Run 2 Emu','Run 2 Data', 'Run2ECALSim'])
-else:
-    leftPlot.legend(['Run 2 Emu','Run 2 Data'])
+
+# if(includeAll):
+#     leftPlot.legend(['Run 2 Emu','Run 2 Data', 'Run2ECALSim'])
+# else:
+#     leftPlot.legend(['Run 2 Emu','Run 2 Data'])
+
 leftPlot.grid(True, axis = "y")
 ymin, ymax = leftPlot.get_ylim()
 
@@ -146,18 +125,21 @@ addLumi = 1
 lumi = 0.210
 Add_CMS_Header(plt, leftPlot, upperRightText, xmin, addLumi, lumi)
 
-rightPlot.plot(ratios_to_data1, x_indicies, color="b", marker = "s", alpha = 0.5, linewidth = 0)
-if(includeAll): rightPlot.plot(ratios_to_data3, x_indicies, color="g", marker = "x", alpha = 0.5, linewidth = 0)
+for file_i in range(0, len(files)):
+    if(file_i == 1): continue # don't include data unpacked
+    color, marker = colors[file_i], markers[file_i]
+    exec("rightPlot.plot(ratios_to_data%s, x_indicies, color = color, marker = marker, alpha = 0.5, linewidth = 0)"%(file_i))
+    exec("rightPlot.errorbar(ratios_to_data%s, x_indicies, xerr = ratios_to_data%s_errs, color=color, marker = marker, capsize = 3, alpha = 0.5, linestyle='')"%(file_i, file_i))
 
-if(error):
-    rightPlot.errorbar(ratios_to_data1, x_indicies, xerr = ratios_to_data1_errs, color="b", marker = "s", capsize = 3, alpha = 0.5, linestyle='')
-    if(includeAll): rightPlot.errorbar(ratios_to_data3, x_indicies, xerr = ratios_to_data3_errs, color="g", marker = "x", capsize = 3, alpha = 0.5, linestyle='')    
+# if(error):
+#     rightPlot.errorbar(ratios_to_data1, x_indicies, xerr = ratios_to_data1_errs, color="b", marker = "s", capsize = 3, alpha = 0.5, linestyle='')
+#     if(includeAll): rightPlot.errorbar(ratios_to_data3, x_indicies, xerr = ratios_to_data3_errs, color="g", marker = "x", capsize = 3, alpha = 0.5, linestyle='')    
 
 rightPlot.set_xlabel('Ratio to Data', fontsize=15)
 rightPlot.grid(True)
 rightPlot.set_xlim(0.5, 1.5)
 nSeeds = len(seeds_used)
-rightPlot.axvline(1., ymin, ymax, color = 'r', linestyle = "--", alpha = 0.5)
+rightPlot.axvline(1., ymin, ymax, color = 'C1', linestyle = "--", alpha = 0.5)
 fig.set_size_inches(5, 10)
 outName = "{ol}/plot.png".format(ol=ol)
 plt.savefig(outName, dpi = 300, bbox_inches='tight')
