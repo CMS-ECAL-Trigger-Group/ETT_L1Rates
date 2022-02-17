@@ -6,32 +6,21 @@ The purpose of this crab configuration file is to run the ETTAnalyzer over many 
 crab submit -c CrabConfig_12_1_0_pre3.py 
 """
 
-# # Choose dataset to re-emulate:
-# # Dataset = "PilotBeam2021" # 2021 Pilot Beam double weights runs: Full Readout
-# Dataset = "Run2_FR" # 306425: 2017F. 324725: 2018D
-# # Dataset = "ZeroBias2018C"
-
-# DatasetInfo = {
-#   "PilotBeam2021" : [["346446", "346447"], "Runs_346446_346447_PilotBeam_2021", "120X_dataRun3_HLT_v3"], 
-#   "ZeroBias2018C" : [None, None, None],
-#   "Run2_FR" : [["324725", "306425"], "Runs_324725_306425_FullReadoutData", "103X_dataRun2_v6"] 
-# }
-
 # runs, DatasetLabel, UserGlobalTag = DatasetInfo[Dataset]
 DatasetLabel = "Run_320038"
 
 # # Configuration parameters 
 inDir = "/afs/cern.ch/work/a/atishelm/private/CMS-ECAL-Trigger-Group/L1Rates/CMSSW_12_3_0_pre1/src/ETT_L1Rates/"
-simECALTP = 0 
-oneFile = 1 # Run over one file as a test (recommended before running over large datasets to test incompatibility issues)
+simECALTP = 1 
+oneFile = 0 # Run over one file as a test (recommended before running over large datasets to test incompatibility issues)
 addFilePrefix = 0 # Add "file:" to start of file paths 
 removeEOSprefix = 1 
 # RecoMethod = "Multifit" # options: Multifit, weights
 # ODD_PF = 1 # 0: No ODD peak finder. 1: With ODD peak finder
 
 runs = ["320038"]
-ECAL_Config = "Run2"
-# ECAL_Config = "StripZeroing"
+# ECAL_Config = "Run2"
+ECAL_Config = "StripZeroing"
 
 if(simECALTP):
   simECALTP_Tag = "simECALTP"
@@ -41,7 +30,7 @@ else:
 if(ECAL_Config == "Run2"):
   OverrideWeights = 1
   WeightsWP = "Run2Weights"
-  OddWeightsSqliteFile = "MinDelta_2p5Prime_OddWeights.db" # because something needs to be passed in case a value for the record doesn't exist for the global tag 
+  OddWeightsSqliteFile = "MinDelta_2p5Prime_OddWeights.db" # because something needs to be passed in case a value for the record doesn't exist for the global tag / event setup 
   TPMode_file = "EcalTPG_TPMode_Run2_default.db"
   TPMode_Tag = "EcalTPG_TPMode_Run2_default"
 else:
@@ -107,7 +96,7 @@ oneFileStr = ""
 if(oneFile): oneFileStr = "_oneFile"
 
 # requestName = '{DatasetLabel}_{ODD_PF_string}_{RecoMethod}_{WeightsWP}ODDweights{oneFileStr}'.format(DatasetLabel=DatasetLabel, ODD_PF_string=ODD_PF_string, RecoMethod=RecoMethod, WeightsWP=WeightsWP, oneFileStr=oneFileStr)
-requestName = '{DatasetLabel}_{ECAL_Config}{oneFileStr}'.format(DatasetLabel=DatasetLabel, ECAL_Config=ECAL_Config, oneFileStr=oneFileStr)
+requestName = '{DatasetLabel}_{ECAL_Config}_{simECALTP_Tag}{oneFileStr}'.format(DatasetLabel=DatasetLabel, ECAL_Config=ECAL_Config, simECALTP_Tag=simECALTP_Tag, oneFileStr=oneFileStr)
 
 config.General.requestName = requestName
 config.General.workArea = 'crab_projects'
