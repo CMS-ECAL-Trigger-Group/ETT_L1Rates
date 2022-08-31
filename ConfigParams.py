@@ -42,7 +42,7 @@ ECAL_options.register ('TPModeTag',
                 VarParsing.VarParsing.varType.string,          
                 "TPModeTag")  
 ECAL_options.register ('OddWeightsSqliteFile',                                        
-                'ZeroCandidateSet.db', 
+                'weights/output/MinDelta_2p5Prime_OddWeights.db', 
                 VarParsing.VarParsing.multiplicity.singleton, 
                 VarParsing.VarParsing.varType.string,          
                 "OddWeightsSqliteFile") 
