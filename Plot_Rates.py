@@ -68,6 +68,10 @@ for seed in seeds:
         exec("rate%s = df%s.iloc[2]"%(file_i, file_i))
         exec("rate%s_err = df%s.iloc[3]"%(file_i, file_i))
 
+        # if(seed == "Total rate"):
+        #     exec("rate%s *= 1000 "%(file_i))
+        #     exec("rate%s_err *= 1000 "%(file_i))
+
     # if(rate0 != 0 and rate1 != 0 and rate2 != 0):
     if(rate0 != 0 and rate1 != 0 and rate2 != 0 and rate3 != 0):
         seeds_used.append(seed)

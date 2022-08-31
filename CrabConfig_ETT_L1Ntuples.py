@@ -7,7 +7,7 @@ crab submit -c CrabConfig_12_1_0_pre3.py
 """
 
 # runs, DatasetLabel, UserGlobalTag = DatasetInfo[Dataset]
-DatasetLabel = "Run_320038"
+DatasetLabel = "Run_324725"
 
 # # Configuration parameters 
 inDir = "/afs/cern.ch/work/a/atishelm/private/CMS-ECAL-Trigger-Group/L1Rates/CMSSW_12_3_0_pre1/src/ETT_L1Rates/"
@@ -18,7 +18,8 @@ removeEOSprefix = 1
 # RecoMethod = "Multifit" # options: Multifit, weights
 # ODD_PF = 1 # 0: No ODD peak finder. 1: With ODD peak finder
 
-runs = ["320038"]
+# runs = ["320038"]
+runs = ["324725"]
 # ECAL_Config = "Run2"
 ECAL_Config = "StripZeroing"
 
